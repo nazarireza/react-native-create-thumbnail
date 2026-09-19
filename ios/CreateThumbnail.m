@@ -84,7 +84,7 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
             [self generateThumbImage:asset atTime:timeStamp maxWidth:maxWidth maxHeight:maxHeight timeToleranceMs:timeToleranceMs completion:completionBlock failure:failBlock];
         } else {
             AVAsset *asset = [AVAsset assetWithURL:vidURL];
-            [self generateLocalMediaThumbImage:asset atTime:timeStamp completion:completionBlock failure:failBlock];
+            [self generateLocalMediaThumbImage:asset atTime:timeStamp maxWidth:maxWidth maxHeight:maxHeight timeToleranceMs:timeToleranceMs completion:completionBlock failure:failBlock];
         }
         
     } @catch(NSException *e) {
@@ -138,9 +138,13 @@ RCT_EXPORT_METHOD(create:(NSDictionary *)config findEventsWithResolver:(RCTPromi
     [generator generateCGImagesAsynchronouslyForTimes:[NSArray arrayWithObject:[NSValue valueWithCMTime:time]] completionHandler:handler];
 }
 
-- (void) generateLocalMediaThumbImage:(AVAsset *)asset atTime:(int)timeStamp completion:(void (^)(UIImage* thumbnail))completion failure:(void (^)(NSError* error))failure {
+- (void)generateLocalMediaThumbImage:(AVAsset *)asset atTime:(int)timeStamp maxWidth:(CGFloat)maxWidth maxHeight:(CGFloat)maxHeight timeToleranceMs:(int)timeToleranceMs completion:(void (^)(UIImage *thumbnail))completion failure:(void (^)(NSError *error))failure {
     AVAssetImageGenerator *imageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:asset];
     imageGenerator.appliesPreferredTrackTransform = YES;
+    imageGenerator.maximumSize = CGSizeMake(maxWidth, maxHeight);
+    imageGenerator.requestedTimeToleranceBefore = CMTimeMake(0, timeToleranceMs / 2);
+    imageGenerator.requestedTimeToleranceAfter = CMTimeMake(0, timeToleranceMs / 2);
+
     CMTime time = CMTimeMake(timeStamp, 1000);
     NSError *error = nil;
     CMTime actualTime;
